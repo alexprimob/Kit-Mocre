@@ -2,67 +2,115 @@
 <html lang="pt-br">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Kit Mocre</title>
 <meta name="description" content="Um gesto com amor e carinho." />
+<meta name="theme-color" content="#111218" />
+
 <style>
-  :root { --bg:#0b0c10; --card:#111218; --ink:#e6e6e6; --muted:#9aa0a6; --accent:#8ab4f8; --ok:#a7f3d0; --err:#fca5a5; }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; background:linear-gradient(120deg, #0b0c10, #171923);
-    color:var(--ink); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
-    display:flex; align-items:center; justify-content:center; padding:20px;
+  :root {
+    --bg:#0b0c10; --card:#111218; --ink:#e6e6e6; --muted:#9aa0a6; --accent:#8ab4f8; --ok:#a7f3d0; --err:#fca5a5;
+    --radius:20px; --pad:24px;
   }
-  .card{width:100%; max-width:560px; background:var(--card); border-radius:20px; padding:28px; box-shadow: 0 10px 30px rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.06);}
-  h1{font-size:28px; margin:0 0 8px}
-  p{margin:0; color:var(--muted); line-height:1.5}
-  .lock{display:flex; align-items:center; gap:10px; margin:18px 0 12px}
-  .row{display:flex; gap:10px; margin-top:14px}
-  input[type=password]{flex:1; background:#0f1116; border:1px solid rgba(255,255,255,.08); color:var(--ink); border-radius:12px; padding:12px 14px; font-size:16px;}
-  button{background:var(--accent); color:#0b0c10; border:0; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer;}
-  .error{color:var(--err); margin-top:8px; min-height:1.2em}
-  .ok{color:var(--ok)}
-  .hidden{display:none}
-  .reveal{margin-top:18px; border-top:1px solid rgba(255,255,255,.06); padding-top:18px}
-  .imgwrap{overflow:hidden; border-radius:16px; border:1px solid rgba(255,255,255,.06); margin:12px 0}
-  img{width:100%; display:block}
-  audio{width:100%; margin-top:10px}
-  .actions{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
-  .actions a{background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--ink); text-decoration:none; padding:10px 14px; border-radius:12px}
-  .badge{display:inline-block; font-size:12px; padding:3px 8px; border-radius:999px; background:rgba(138,180,248,.18); color:var(--accent); margin-left:6px}
-  .small{font-size:13px}
-  .footer{margin-top:12px; font-size:12px; color:#8b949e}
-  .setup{border:1px dashed rgba(255,255,255,.2); padding:12px; border-radius:12px; margin-top:12px}
-  code{background:#0f1116; padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.08)}
+  * { box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+  html,body { height:100%; }
+  body{
+    margin:0;
+    background:linear-gradient(120deg, #0b0c10, #171923);
+    color:var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
+    display:flex; align-items:center; justify-content:center;
+    padding: clamp(12px, 4vw, 20px);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px); /* área segura iPhone */
+  }
+  .card{
+    width:100%; max-width:560px;
+    background:var(--card);
+    border-radius:var(--radius);
+    padding:var(--pad);
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.06);
+  }
+  h1{ font-size:clamp(22px, 5vw, 28px); margin:0 0 6px; letter-spacing:.2px }
+  p{ margin:0; color:var(--muted); line-height:1.5 }
+  .badge{ display:inline-block; font-size:12px; padding:4px 8px; border-radius:999px; background:rgba(138,180,248,.18); color:var(--accent); margin-left:6px }
+
+  .lock{ display:flex; align-items:center; gap:10px; margin:18px 0 10px }
+  .lock svg{ flex:0 0 22px; opacity:.9 }
+
+  .row{
+    display:flex; gap:10px; margin-top:14px;
+    align-items:stretch;
+  }
+
+  /* campos maiores para toque + evitar zoom no iOS (>=16px) */
+  input[type=password]{
+    flex:1; background:#0f1116; border:1px solid rgba(255,255,255,.1);
+    color:var(--ink); border-radius:12px; padding:14px 16px; font-size:16px;
+    min-height:48px; outline:none;
+  }
+  input[type=password]:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(138,180,248,.25); }
+
+  button{
+    background:var(--accent); color:#0b0c10; border:0; padding:0 18px; border-radius:12px;
+    font-weight:700; cursor:pointer; min-height:48px; white-space:nowrap;
+  }
+  button:active{ transform:translateY(1px); }
+
+  .error{ color:var(--err); margin-top:8px; min-height:1.2em }
+  .ok{ color:var(--ok) }
+  .hidden{ display:none }
+
+  .reveal{ margin-top:18px; border-top:1px solid rgba(255,255,255,.06); padding-top:18px }
+  .imgwrap{ overflow:hidden; border-radius:16px; border:1px solid rgba(255,255,255,.06); margin:12px 0 }
+  img{ width:100%; display:block; height:auto; border:0; -webkit-user-drag:none }
+  audio{ width:100%; margin-top:12px }
+
+  .actions{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap }
+  .actions a{
+    background:transparent; border:1px solid rgba(255,255,255,.12);
+    color:var(--ink); text-decoration:none; padding:12px 14px; border-radius:12px; min-height:44px;
+    display:inline-flex; align-items:center;
+  }
+
+  .footer{ margin-top:14px; font-size:12px; color:#8b949e }
+
+  .setup{ border:1px dashed rgba(255,255,255,.2); padding:12px; border-radius:12px; margin-top:12px }
+  code{ background:#0f1116; padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.08) }
+
+  /* mobile: empilhar botão e input */
+  @media (max-width: 420px){
+    .row{ flex-direction:column; }
+    button{ width:100%; }
+  }
 </style>
 </head>
 <body>
-  <div class="card" id="app">
+  <div class="card" id="app" role="main">
     <h1>Kit Mocre <span class="badge">NFC</span></h1>
-    <p class="small">Parabéns Mocre ❤️.</p>
+    <p class="small" aria-live="polite">Parabéns Mocre ❤️.</p>
 
-    <div class="lock" id="lockRow">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-        <path d="M17 11H7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="1.5"/>
-        <path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.5"/>
-      </svg>
+    <div class="lock" id="lockRow" aria-hidden="false">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 11H7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 11V8a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="1.5"/></svg>
       <p>Toque para revelar</p>
     </div>
 
-    <div class="row">
-      <input id="pass" type="password" placeholder="Digite a senha" />
-      <button id="btn">Desbloquear</button>
-    </div>
-    <div id="error" class="error"></div>
+    <form class="row" onsubmit="return false;" aria-label="Desbloquear conteúdo">
+      <input id="pass" type="password" placeholder="Digite a senha"
+             inputmode="text" autocomplete="one-time-code"
+             autocapitalize="off" autocorrect="off" spellcheck="false"
+             aria-label="Senha" />
+      <button id="btn" type="button" aria-label="Desbloquear">Desbloquear</button>
+    </form>
+    <div id="error" class="error" role="status" aria-live="polite"></div>
 
     <div id="reveal" class="reveal hidden">
       <div class="imgwrap">
-        <img src="assets/foto.jpg" alt="Uma das minhas fotos preferidas">
+        <img src="assets/foto.jpg" alt="Uma das minhas fotos preferidas" loading="lazy" decoding="async">
       </div>
       <p style="margin-top:6px">“Obrigado por fazer parte da minha vida, e me ensinar tanto.”</p>
 
-      <audio id="aud" controls preload="metadata" class="hidden"></audio>
+      <audio id="aud" controls preload="metadata" class="hidden" aria-label="Reproduzir áudio"></audio>
 
       <div class="actions">
         <a id="openPlaylist" href="#" target="_blank" rel="noopener">Abrir playlist</a>
@@ -70,85 +118,4 @@
       <div class="footer">Com carinho do Curutungo.</div>
     </div>
 
-    <div id="setup" class="setup hidden">
-      <strong>CONFIGURAÇÃO</strong>
-      <p class="small">Use este painel para gerar o hash SHA-256 da sua senha. Cole o resultado na constante <code>PASSWORD_HASH</code> no topo do arquivo.</p>
-      <div class="row" style="margin-top:8px">
-        <input id="setupInput" type="text" placeholder="Digite a senha real aqui para gerar o hash">
-        <button id="setupBtn">Gerar hash</button>
-      </div>
-      <div class="hint" id="hashOut"></div>
-    </div>
-  </div>
-
-<script>
-const PASSWORD_HASH = "f2be77a478f1dfa8995e424281c2b33ec4e65436ab7a253558a75cbb8c66656e";
-const PLAYLIST_URL = "https://open.spotify.com/playlist/7LPuJkNsKpwRWZ6AuFVhQQ?si=2d2c4108a2d04a9e";
-
-async function sha256Hex(str){
-  const enc = new TextEncoder().encode(str.trim().toLowerCase());
-  const buf = await crypto.subtle.digest("SHA-256", enc);
-  const bytes = Array.from(new Uint8Array(buf));
-  return bytes.map(b=>b.toString(16).padStart(2,"0")).join("");
-}
-
-(function main(){
-  const params = new URLSearchParams(location.search);
-  const setupMode = params.get("setup") === "1";
-  const $pass = document.getElementById("pass");
-  const $btn = document.getElementById("btn");
-  const $err = document.getElementById("error");
-  const $reveal = document.getElementById("reveal");
-  const $aud = document.getElementById("aud");
-  const $setup = document.getElementById("setup");
-  const $setupInput = document.getElementById("setupInput");
-  const $setupBtn = document.getElementById("setupBtn");
-  const $hashOut = document.getElementById("hashOut");
-  const $openPlaylist = document.getElementById("openPlaylist");
-
-  if(setupMode){ $setup.classList.remove("hidden"); }
-  if(PLAYLIST_URL && PLAYLIST_URL.startsWith("http")){ $openPlaylist.href = PLAYLIST_URL; }
-  else{ $openPlaylist.parentElement.classList.add("hidden"); }
-
-  function prepareAudio(){
-    $aud.src = "assets/audio.mp3";
-    $aud.addEventListener("loadedmetadata", ()=>{ $aud.classList.remove("hidden"); }, {once:true});
-    $aud.addEventListener("error", ()=>{ /* mantém oculto se falhar */ }, {once:true});
-  }
-
-  async function unlock(){
-    $err.textContent = "";
-    const val = $pass.value;
-    if(!val){ $err.textContent = "Digite a senha."; return; }
-    if(!PASSWORD_HASH){ $err.textContent = "Configuração pendente: defina o PASSWORD_HASH no código."; return; }
-    try{
-      const hx = await sha256Hex(val);
-      if(hx === PASSWORD_HASH){
-        $reveal.classList.remove("hidden");
-        document.getElementById("lockRow").classList.add("hidden");
-        document.querySelector(".row").classList.add("hidden");
-        $err.textContent = "Caraii burracha, tu é boa mesmo 😂."; $err.classList.add("ok");
-        prepareAudio();
-      }else{
-        $err.textContent = "Senha incorreta. Tente de novo 😒";
-      }
-    }catch(e){
-      $err.textContent = "Erro ao validar senha.";
-    }
-  }
-
-  $btn.addEventListener("click", unlock);
-  $pass.addEventListener("keydown", (e)=>{ if(e.key === "Enter"){ unlock(); } });
-
-  if($setupBtn){
-    $setupBtn.addEventListener("click", async ()=>{
-      const raw = $setupInput.value || "";
-      if(!raw){ $hashOut.textContent = "Digite uma senha para gerar o hash."; return; }
-      const hx = await sha256Hex(raw);
-      $hashOut.innerHTML = "<div>SHA-256 (hex): <code>"+hx+"</code></div>";
-    });
-  }
-})();
-</script>
-</body>
-</html>
+    <div id="setup" c
