@@ -21,7 +21,7 @@
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
     display:flex; align-items:center; justify-content:center;
     padding: clamp(12px, 4vw, 20px);
-    padding-bottom: calc(env(safe-area-inset-bottom) + 12px); /* área segura iPhone */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
   }
   .card{
     width:100%; max-width:560px;
@@ -43,7 +43,6 @@
     align-items:stretch;
   }
 
-  /* campos maiores para toque + evitar zoom no iOS (>=16px) */
   input[type=password]{
     flex:1; background:#0f1116; border:1px solid rgba(255,255,255,.1);
     color:var(--ink); border-radius:12px; padding:14px 16px; font-size:16px;
@@ -78,7 +77,6 @@
   .setup{ border:1px dashed rgba(255,255,255,.2); padding:12px; border-radius:12px; margin-top:12px }
   code{ background:#0f1116; padding:2px 6px; border-radius:6px; border:1px solid rgba(255,255,255,.08) }
 
-  /* mobile: empilhar botão e input */
   @media (max-width: 420px){
     .row{ flex-direction:column; }
     button{ width:100%; }
@@ -95,12 +93,12 @@
       <p>Toque para revelar</p>
     </div>
 
-    <form class="row" onsubmit="return false;" aria-label="Desbloquear conteúdo">
+    <form class="row" id="unlockForm" aria-label="Desbloquear conteúdo">
       <input id="pass" type="password" placeholder="Digite a senha"
              inputmode="text" autocomplete="one-time-code"
              autocapitalize="off" autocorrect="off" spellcheck="false"
              aria-label="Senha" />
-      <button id="btn" type="button" aria-label="Desbloquear">Desbloquear</button>
+      <button id="btn" type="submit" aria-label="Desbloquear">Desbloquear</button>
     </form>
     <div id="error" class="error" role="status" aria-live="polite"></div>
 
@@ -118,4 +116,98 @@
       <div class="footer">Com carinho do Curutungo.</div>
     </div>
 
-    <div id="setup" c
+    <div id="setup" class="setup hidden">
+      <strong>CONFIGURAÇÃO</strong>
+      <p class="small">Use este painel para gerar o hash SHA-256 da sua senha. Cole o resultado na constante <code>PASSWORD_HASH</code> no topo do arquivo.</p>
+      <div class="row" style="margin-top:8px">
+        <input id="setupInput" type="text" placeholder="Digite a senha real aqui para gerar o hash" aria-label="Senha para gerar hash">
+        <button id="setupBtn" type="button">Gerar hash</button>
+      </div>
+      <div class="hint" id="hashOut"></div>
+    </div>
+  </div>
+
+<script>
+const PASSWORD_HASH = "f2be77a478f1dfa8995e424281c2b33ec4e65436ab7a253558a75cbb8c66656e";
+const PLAYLIST_URL = "https://open.spotify.com/playlist/7LPuJkNsKpwRWZ6AuFVhQQ?si=2d2c4108a2d04a9e";
+
+async function sha256Hex(str){
+  const enc = new TextEncoder().encode(str.trim().toLowerCase());
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+
+function main(){
+  const params = new URLSearchParams(location.search);
+  const setupMode = params.get("setup") === "1";
+  const $pass = document.getElementById("pass");
+  const $btn = document.getElementById("btn");
+  const $err = document.getElementById("error");
+  const $reveal = document.getElementById("reveal");
+  const $aud = document.getElementById("aud");
+  const $setup = document.getElementById("setup");
+  const $setupInput = document.getElementById("setupInput");
+  const $setupBtn = document.getElementById("setupBtn");
+  const $hashOut = document.getElementById("hashOut");
+  const $openPlaylist = document.getElementById("openPlaylist");
+  const $form = document.getElementById("unlockForm");
+
+  if(setupMode){ $setup.classList.remove("hidden"); }
+
+  if(PLAYLIST_URL && PLAYLIST_URL.startsWith("http")){
+    $openPlaylist.href = PLAYLIST_URL;
+  } else {
+    $openPlaylist.parentElement.classList.add("hidden");
+  }
+
+  function prepareAudio(){
+    $aud.src = "assets/audio.mp3";
+    $aud.addEventListener("loadedmetadata", ()=>{ $aud.classList.remove("hidden"); }, { once:true });
+  }
+
+  // garantir visibilidade do input quando teclado abre
+  $pass.addEventListener("focus", ()=>{ setTimeout(()=>{ $pass.scrollIntoView({ block:"center", behavior:"smooth" }); }, 150); });
+
+  async function unlock(){
+    $err.textContent = "";
+    const val = $pass.value;
+    if(!val){ $err.textContent = "Digite a senha."; return; }
+    if(!PASSWORD_HASH){ $err.textContent = "Configuração pendente: defina o PASSWORD_HASH no código."; return; }
+    try{
+      const hx = await sha256Hex(val);
+      if(hx === PASSWORD_HASH){
+        $reveal.classList.remove("hidden");
+        document.getElementById("lockRow").setAttribute("aria-hidden","true");
+        $form.classList.add("hidden");
+        $err.textContent = "Caraii burracha, tu é boa mesmo 😂."; $err.classList.add("ok");
+        if(navigator.vibrate){ navigator.vibrate(15); }
+        prepareAudio();
+      }else{
+        $err.textContent = "Senha incorreta. Tente de novo 😒";
+        if(navigator.vibrate){ navigator.vibrate([10,40,10]); }
+      }
+    }catch(e){
+      $err.textContent = "Erro ao validar senha.";
+    }
+  }
+
+  // eventos: submit, click e touchstart (cobre iOS)
+  $form.addEventListener("submit", function(e){ e.preventDefault(); unlock(); });
+  $btn.addEventListener("click", function(e){ e.preventDefault(); unlock(); });
+  $btn.addEventListener("touchstart", function(e){ e.preventDefault(); unlock(); }, {passive:false});
+
+  // painel de setup (gerar hash)
+  if($setupBtn){
+    $setupBtn.addEventListener("click", async ()=>{
+      const raw = $setupInput.value || "";
+      if(!raw){ $hashOut.textContent = "Digite uma senha para gerar o hash."; return; }
+      const hx = await sha256Hex(raw);
+      $hashOut.innerHTML = "<div>SHA-256 (hex): <code>"+hx+"</code></div>";
+    });
+  }
+}
+
+document.addEventListener("DOMContentLoaded", main);
+</script>
+</body>
+</html>
